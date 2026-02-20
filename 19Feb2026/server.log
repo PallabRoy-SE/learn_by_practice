@@ -1,0 +1,4 @@
+INFO: Server started
+ERROR: Database connection failed
+INFO: Health check passed
+ERROR: Timeout connecting to payment gateway
