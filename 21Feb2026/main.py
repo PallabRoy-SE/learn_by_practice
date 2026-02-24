@@ -1,4 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel
+
+
+class UserCreate(BaseModel):
+    name: str
+    role: str
+
 
 MOCK_USERS = {
     1: {"name": "Alice", "role": "admin"},
@@ -11,7 +18,14 @@ app = FastAPI()
 
 @app.get("/users/{user_id}")
 def get_user(user_id: int):
-    return MOCK_USERS.get(user_id)
+    user = MOCK_USERS.get(user_id)
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    return user
 
 
 @app.get("/users")
@@ -20,6 +34,13 @@ def get_users(role: str | None = None):
         return [user for id, user in MOCK_USERS.items() if user.get("role") == role]
     else:
         return MOCK_USERS
+
+
+@app.post("/users", status_code=status.HTTP_201_CREATED)
+def create_user(user: UserCreate):
+    new_id = len(MOCK_USERS) + 1
+    MOCK_USERS[new_id] = user.model_dump()
+    return MOCK_USERS.get(new_id)
 
 
 @app.get("/")
